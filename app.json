@@ -1,4 +1,5 @@
 {
   "name": "SupportTest",
-  "displayName": "SupportTest"
+  "displayName": "SupportTest",
+  "entryPoint": "./src/App.tsx"
 }

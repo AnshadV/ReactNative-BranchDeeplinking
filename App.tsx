@@ -5,8 +5,15 @@
  * @format
  */
 
-import React from 'react';
+import React, {useState} from 'react';
 import type {PropsWithChildren} from 'react';
+import { Alert } from 'react-native';
+import Snackbar from 'react-native-snackbar';
+import Clipboard from '@react-native-clipboard/clipboard';
+//  import { createStackNavigator } from '@ /stack';
+import LinkView from './src/components/LinkView';
+
+
 import {
   SafeAreaView,
   ScrollView,
@@ -32,14 +39,17 @@ type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 
+
 branch.subscribe(async ({error, params, uri})=>{
   if(error){
     console.error('Error from Branch: '+ error)
+  
     return
   }
 
   let lastParams = await branch.getLatestReferringParams()
-  console.log('First Referring Params: ', JSON.stringify(lastParams))
+  Alert.alert('Link data', 'Here is the data from the link: ' + JSON.stringify(lastParams, null, 2));
+  console.log('Last Referring Params: ', JSON.stringify(lastParams, null, 2))
 })
 
 
@@ -74,6 +84,25 @@ function Section({children, title}: SectionProps): JSX.Element {
   );
 }
 
+const buo = branch.createBranchUniversalObject(
+  'item/12345',
+  {
+    canonicalUrl: 'https://branch.io/item/12345',
+    title: 'My Item Title',
+    contentMetadata: {
+      quantity: 1,
+      price: 23.2,
+      sku: '1994320302',
+      productName: 'my_product_name1',
+      productBrand: 'my_prod_Brand1',
+      customMetadata: {
+        custom_key1: 'custom_value1',
+        custom_key2: 'custom_value2',
+      },
+    },
+  }
+);
+
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -81,7 +110,11 @@ function App(): JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  function registerView() {
+  const [data, setData] = useState<string>('');
+  
+
+  async function registerView() {
+    const buoInstance = await buo
     let params = {
       alias: "my custom alias",
       description: "Product Search",
@@ -91,11 +124,171 @@ function App(): JSX.Element {
        "Custom_Event_Property_Key2": "Custom_Event_Property_val2"
       }
     }
-    let event = new BranchEvent(BranchEvent.ViewItem,null,params)
+    let event = new BranchEvent(BranchEvent.ViewItem,buoInstance,params)
     event.logEvent()
+    setData(JSON.stringify(event,null,2))
+
+    Snackbar.show({
+      text: 'View Item event successfully fired',
+      duration: Snackbar.LENGTH_SHORT,
+    });
   
   
   }
+
+
+  
+
+
+  async function getFirstParams() {
+    let firstParams = await branch.getFirstReferringParams();
+
+    setData(JSON.stringify(firstParams, null, 2))
+    console.log("firstParams", JSON.stringify(firstParams, null, 2))
+  }
+
+  async function getLastParams() {
+    let lastParams = await branch.getLatestReferringParams();
+    setData(JSON.stringify(lastParams, null, 2))
+    console.log("Last Params", JSON.stringify(lastParams, null, 2))
+  }
+
+  async function getAttributedParams() {
+    let attributedParams = await branch.lastAttributedTouchData();
+    setData(JSON.stringify(attributedParams, null, 2))
+    console.log("Last Attributed Touch Data", JSON.stringify(attributedParams, null, 2))
+  }
+
+  
+
+ 
+
+  async function registerPurchase() {
+    const comBuo = await buo;
+    let params = {
+      transaction_id: "tras_Id_1232343434",
+      currency: "USD",
+      revenue: 180.2,
+      shipping: 10.5,
+      tax: 13.5,
+      coupon: "promo-1234",
+      affiliation: "high_fi",
+      description: "Preferred purchase",
+      purchase_loc: "Palo Alto",
+      store_pickup: "unavailable",
+      customData: {
+       "Custom_Event_Property_Key2": "Custom_Event_Property_val2"
+      }
+    }
+      let event = new BranchEvent(BranchEvent.Purchase,comBuo,params)
+      event.logEvent()
+      setData(JSON.stringify(event,null,2))
+
+      Snackbar.show({
+        text: 'Purchase event successfully fired!',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+  
+  }
+
+  
+  
+  async function generateLink(): Promise<string> {
+    const linkProperties = {
+      feature: 'sharing',
+      channel: 'facebook',
+      campaign: 'content 123 launch',
+    };
+  
+    const controlParams = {
+      $desktop_url: 'https://example.com/home',
+      custom: 'data',
+    };
+  
+    const buoInstance = await buo;
+    const { url } = await buoInstance.generateShortUrl(linkProperties, controlParams);
+    
+    setData(url)
+
+    Clipboard.setString(url)
+    Snackbar.show({
+      text: 'Generated link copied to clipboard!',
+      duration: Snackbar.LENGTH_SHORT,
+    });
+    return url; 
+    
+
+  }
+
+  async function generateQR() {
+    var qrCodeSettings = {
+      width: 500,
+      codeColor: "#3b2016",
+      backgroundColor: "#a8e689",
+      centerLogo: "https://cdn.branch.io/branch-assets/159857dsads5682753-og_image.png",
+      margin: 1,
+      imageFormat: "PNG"
+  };
+  
+  var buoOptions = {
+      title: "A Test Title",
+      contentDescription: "A test content desc",
+      contentMetadata: {
+          price: "200",
+          productName: "QR Code Scanner",
+          customMetadata: { "someKey": "someValue", "anotherKey": "anotherValue" }
+      }
+  };
+  
+  var lp = {
+      feature: "qrCode",
+      tags: ["test", "working"],
+      channel: "faceboqqok",
+      campaign: "posters"
+  };
+  
+  var controlParams = {
+      $desktop_url: "https://www.desktop.com",
+      $fallback_url: "https://www.fallback.com"
+  };
+  
+  try {
+      var result = await branch.getBranchQRCode(qrCodeSettings, buoOptions, lp, controlParams);
+  }
+  catch (err) {
+      console.log('QR Code Err: ', err);
+  }
+  }
+
+
+  async function showShareSheet() {
+
+    let shareOptions = { 
+      messageHeader: 'Check this out', 
+      messageBody: 'No really, check this out!' 
+    }
+    
+    let linkProperties = {
+      feature: 'sharing', 
+      channel: 'facebook' 
+    }
+    
+    let controlParams = { 
+      $desktop_url: 'http://example.com/home', 
+      $ios_url: 'http://example.com/ios' 
+    }
+
+    const ssbuoInstance = await buo;
+    
+    let {channel, completed, error} = await ssbuoInstance.showShareSheet(shareOptions, linkProperties, controlParams)
+  }
+  
+  function setIdentity() {
+    const randomId = Math.random().toString(36).substring(2, 15);
+    branch.setIdentity(randomId);
+    console.log("User Identity: ", randomId)
+  }
+
 
 
   
@@ -114,28 +307,31 @@ function App(): JSX.Element {
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
-            <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={this.logCommerce}>
-               <Text>Validate SDK Integration</Text>
+            <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={setIdentity}>
+               <Text>Set Identity</Text>
              </TouchableOpacity>
            <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={registerView}>
                <Text>Register View</Text>
              </TouchableOpacity>
-             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={this.logCommerce}>
+             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={registerPurchase}>
                <Text>Register Purchase</Text>
              </TouchableOpacity>
-             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={this.logCommerce}>
+             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={getFirstParams}>
                <Text>Get First Parameters</Text>
              </TouchableOpacity>
-             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={this.logCommerce}>
+             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={getAttributedParams}>
+               <Text>Get Last Touch Data</Text>
+             </TouchableOpacity>
+             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={getLastParams}>
                <Text>Get Last Parameters</Text>
              </TouchableOpacity>
-             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={this.logCommerce}>
+             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={generateLink}>
                <Text>Generate Link</Text>
              </TouchableOpacity>
-             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={this.logCommerce}>
+             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={generateQR}>
                <Text>Generate QR Code</Text>
              </TouchableOpacity>
-             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={this.logCommerce}>
+             <TouchableOpacity style={{borderWidth: 1, borderRadius: 10, padding: 10, margin: 10}} onPress={showShareSheet}>
                <Text>Show Share Sheet</Text>
              </TouchableOpacity>
              <TouchableWithoutFeedback>
@@ -144,8 +340,9 @@ function App(): JSX.Element {
               </View>
              </TouchableWithoutFeedback>
              <View>
-              <Text> </Text>
-             </View>
+               <Text selectable={true} style={{marginTop: 20, padding: 10}}>{data}</Text>
+            </View>
+
              
             
              

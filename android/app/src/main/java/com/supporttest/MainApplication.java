@@ -1,4 +1,4 @@
-package com.supporttest;
+  package com.supporttest;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
@@ -55,7 +55,7 @@ public class MainApplication extends Application implements ReactApplication {
   public void onCreate() {
     super.onCreate();
 
-      RNBranchModule.enableLogging();
+      //RNBranchModule.enableLogging();
       RNBranchModule.getAutoInstance(this);
     SoLoader.init(this, /* native exopackage */ false);
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
