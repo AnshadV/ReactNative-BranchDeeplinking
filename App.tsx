@@ -7,7 +7,7 @@
 
 import React, {useState} from 'react';
 import type {PropsWithChildren} from 'react';
-import { Alert } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import Clipboard from '@react-native-clipboard/clipboard';
 //  import { createStackNavigator } from '@ /stack';
@@ -40,17 +40,64 @@ type SectionProps = PropsWithChildren<{
 }>;
 
 
-branch.subscribe(async ({error, params, uri})=>{
-  if(error){
-    console.error('Error from Branch: '+ error)
-  
-    return
-  }
+// listener
+branch.subscribe({
+  onOpenStart: ({
+      uri,
+      cachedInitialEvent
+  }) => {
+      console.log(
+          'subscribe onOpenStart, will open ' +
+          uri +
+          ' cachedInitialEvent is ' +
+          cachedInitialEvent,
+      );
+  },
+  onOpenComplete: async ({
+      error,
+      params,
+      uri
+  }) => {
+      if (error) {
+          console.error(
+              'subscribe onOpenComplete, Error from opening uri: ' +
+              uri +
+              ' error: ' +
+              error,
+          );
+          return;
+      }
 
-  let lastParams = await branch.getLatestReferringParams()
-  Alert.alert('Link data', 'Here is the data from the link: ' + JSON.stringify(lastParams, null, 2));
-  console.log('Last Referring Params: ', JSON.stringify(lastParams, null, 2))
-})
+      if (params) {
+        if (params['+clicked_branch_link']) {
+          // User clicked a Branch link, so redirect them to a special landing page
+          Alert.alert('User clicked a Branch link', 'Here is the data from the link: ' + JSON.stringify(params, null, 2));
+          let deepLinkPath = params.$deeplink_path as string; 
+          let canonicalUrl = params.$canonical_url as string;
+
+          Alert.alert('canonical URL', 'Here is the data from the link: ' + JSON.stringify(canonicalUrl, null, 2));
+
+
+          return;
+        }
+        
+        if (params['+non_branch_link']) {
+          console.log('non_branch_link: ' + uri);
+          Alert.alert('non_branch_link', 'Here is the data from the link: ' + JSON.stringify("Non branch link", null, 2));
+          // Route based on non-Branch links
+          return;
+        }
+        
+        // handle params
+        
+        
+        // Route based on Branch link data 
+      }
+
+      
+  },
+});
+
 
 
 

@@ -2,6 +2,31 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>branch_universal_link_domains</key>
+	<array>
+		<string>mh2em.app.link</string>
+		<string>mh2em-alternate.app.link</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>supportint</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>org.reactjs.native.example.SupportTest</string>
+		</dict>
+	</array>
+	<key>branch_key</key>
+	<dict>
+		<key>live</key>
+		<string>key_live_ip00Iu2iRmPBp3HRPVNM0jofACd6VKrz</string>
+		<key>test</key>
+		<string>key_test_pl5EWe1UNaOQyus7V2ipnasydFspH54C</string>
+	</dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -25,16 +50,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSExceptionDomains</key>
-		<dict>
-			<key>localhost</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-			</dict>
-		</dict>
-	</dict>
+	<dict/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>UILaunchStoryboardName</key>
