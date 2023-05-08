@@ -88,10 +88,6 @@ branch.subscribe({
           return;
         }
         
-        // handle params
-        
-        
-        // Route based on Branch link data 
       }
 
       
