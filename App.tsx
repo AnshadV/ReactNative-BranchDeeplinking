@@ -5,6 +5,8 @@
  * @format
  */
 
+
+
 import React, {useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import { Alert, Linking } from 'react-native';
@@ -12,6 +14,7 @@ import Snackbar from 'react-native-snackbar';
 import Clipboard from '@react-native-clipboard/clipboard';
 //  import { createStackNavigator } from '@ /stack';
 import LinkView from './src/components/LinkView';
+
 
 
 import {
@@ -168,8 +171,15 @@ function App(): JSX.Element {
       }
     }
     let event = new BranchEvent(BranchEvent.ViewItem,buoInstance,params)
-    event.logEvent()
-    setData(JSON.stringify(event,null,2))
+    
+    //event.logEvent()
+    if(event.logEvent() != null) {
+      Snackbar.show({
+        text: 'fail',
+        duration: Snackbar.LENGTH_SHORT,
+      });
+    }
+    //setData(JSON.stringify(event,null,2))
 
     Snackbar.show({
       text: 'View Item event successfully fired',
